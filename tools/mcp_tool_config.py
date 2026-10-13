@@ -272,6 +272,8 @@ def _outside_package(launcher: str, managed: str, dirs: list[str]) -> tuple[str,
     moved = copies(dirs)
     if moved == dirs:
         return managed, dirs
+    # Plain which(): Hermes's own copy dirs hold one real node.exe/npx.cmd, so the parent's
+    # PATHEXT is the right question (unlike a user server's config env, see _which_with_config_pathext).
     return shutil.which(launcher, path=os.pathsep.join(moved)) or managed, moved
 
 
@@ -497,8 +499,12 @@ def _packaged_npx_entry(command: str, args: list) -> Optional[tuple]:
     if not manifest.is_file():
         install = [node, npm_cli, "install", "--prefix", str(prefix), "--no-save", "--ignore-scripts",
                    "--no-audit", "--no-fund", "--loglevel=error", spec]
-        result = subprocess.run(install, capture_output=True, text=True, encoding="utf-8", errors="replace",
-                                stdin=subprocess.DEVNULL, timeout=600, check=False)
+        try:
+            result = subprocess.run(install, capture_output=True, text=True, encoding="utf-8", errors="replace",
+                                    stdin=subprocess.DEVNULL, timeout=600, check=False)
+        except (subprocess.SubprocessError, OSError) as exc:  # hang, unwritable prefix, AV lock, node not startable
+            logger.warning("npm install of %s with the packaged node did not run: %s", spec, exc)
+            return None
         if result.returncode != 0 or not manifest.is_file():
             logger.warning("npm install of %s with the packaged node failed: %s", spec,
                            (result.stderr or result.stdout).strip()[-500:])
