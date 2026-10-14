@@ -5505,6 +5505,15 @@ def resolve_provider_client(
         return branch(req)
     if provider == "azure-foundry":
         return _resolve_azure_foundry_branch(req)
+    # wedid fork: 주 에이전트의 provider 가 자기 client 를 내주는 profile 이면(OpenAI-over-HTTP 가
+    # 아닌 in-process provider) 보조 호출도 그 client 로 간다 — 주 에이전트의
+    # ``_provider_supplied_client`` 와 같은 이음매다. 없으면 압축 요약이 그 provider 를 「없음」으로
+    # 보고 요약 없이 자른다.
+    if main_runtime and str(main_runtime.get("provider") or "").strip().lower() == provider:
+        supplied = _api_key_profile_supplied_client(
+            provider, api_key=main_runtime.get("api_key"), base_url=main_runtime.get("base_url"))
+        if supplied is not None:
+            return _route_client(req, supplied, model or main_runtime.get("model"))
     return _resolve_registry_branch(req)
 
 
