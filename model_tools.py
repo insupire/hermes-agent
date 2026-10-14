@@ -824,7 +824,10 @@ def _execute_tool(function_name: str, function_args: dict[str, Any], original_ar
                   *, user_task: Optional[str], enabled_tools: Optional[list[str]], skip_tool_execution_middleware: bool) -> Any:
     """Run the registry handler (through tool-execution middleware unless skipped)
     with the approval observability context bound for the duration."""
-    dispatch_kwargs: dict[str, Any] = {"task_id": ids.task_id, "session_id": ids.session_id}
+    # wedid fork: 부름의 식별자도 싣는다 — 안 받는 handler 는 `_kwargs_accepted_by` 가 걸러 낸다.
+    # 호스트의 도구가 「어느 부름의 답인가」를 알아야 장부 · 나란히 서기 판정이 선다.
+    dispatch_kwargs: dict[str, Any] = {"task_id": ids.task_id, "session_id": ids.session_id,
+                                       "tool_call_id": ids.tool_call_id}
     if function_name == "execute_code":
         # Prefer the caller's list so subagents can't overwrite the parent's
         # tool set via the process-global.
