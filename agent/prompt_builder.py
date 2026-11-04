@@ -550,6 +550,15 @@ GOOGLE_MODEL_OPERATIONAL_GUIDANCE = (
     "- **Keep going:** Work autonomously until the task is fully resolved. Don't stop with a plan — execute it.\n"
 )
 
+# wedid fork: 호스트가 정체를 대는 실행(`identity_prompt`)에는 없는 파일 · CLI 도구를 가리키는 줄을 뺀 행동 지시만 싣는다.
+HOSTED_GOOGLE_GUIDANCE = (
+    "# Google model operational directives\n"
+    "Follow these operational rules strictly:\n"
+    "- **Conciseness:** Keep explanatory text brief — a few sentences, not "
+    "paragraphs. Focus on actions and results over narration.\n"
+    "- **Keep going:** Work autonomously until the task is fully resolved. Don't stop with a plan — execute it.\n"
+)
+
 
 # computer_use has no prompt block on purpose: its guidance lives in the tool
 # schema and each action result's verdict.
