@@ -1,6 +1,10 @@
 """wedid fork: 호스트가 정체를 대면 그 글이 첫 자리에 서고, 안 대면 상위 동작 그대로다."""
 
-from agent.prompt_builder import DEFAULT_AGENT_IDENTITY, GOOGLE_MODEL_OPERATIONAL_GUIDANCE
+from agent.prompt_builder import (
+    DEFAULT_AGENT_IDENTITY,
+    GOOGLE_MODEL_OPERATIONAL_GUIDANCE,
+    HERMES_AGENT_HELP_GUIDANCE_NO_SKILLS,
+)
 from agent.system_prompt import build_system_prompt_parts
 from run_agent import AIAgent
 
@@ -45,7 +49,7 @@ def test_a_hosted_identity_takes_the_first_place(monkeypatch, tmp_path):
 def test_without_it_the_prompt_is_the_upstream_one(monkeypatch, tmp_path):
     prompt = _prompt(_agent(monkeypatch, tmp_path))
     assert prompt.startswith(DEFAULT_AGENT_IDENTITY)
-    assert "You run on Hermes Agent" in prompt and "OUT-OF-BAND" in prompt
+    assert HERMES_AGENT_HELP_GUIDANCE_NO_SKILLS.strip() in prompt and "OUT-OF-BAND" in prompt
     assert GOOGLE_MODEL_OPERATIONAL_GUIDANCE.strip() in prompt
 
 
