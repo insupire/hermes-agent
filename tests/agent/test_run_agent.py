@@ -1223,6 +1223,24 @@ class TestEnvironmentProbeIntegration:
         prompt = agent._build_system_prompt()
         assert "Python toolchain:" not in prompt
 
+    def test_probe_stays_out_when_host_supplies_identity(self, monkeypatch):
+        """wedid fork: a hosted run (``identity_prompt``) has no terminal, so the
+        host's Python toolchain state never reaches its prompt."""
+        from tools import env_probe
+        env_probe._reset_cache_for_tests()
+        monkeypatch.setattr(env_probe, "_python_version_of",
+                            lambda b: {"python3": "3.11.15"}.get(b))
+        monkeypatch.setattr(env_probe, "_has_pip_module", lambda b: False)
+        monkeypatch.setattr(env_probe, "_detect_pep668", lambda b: True)
+        monkeypatch.setattr(env_probe, "_pip_python_version", lambda: "3.12")
+        monkeypatch.setattr(env_probe.shutil, "which", lambda name: None)
+
+        agent = self._make_agent(environment_probe=True)
+        assert "Python toolchain:" in agent._build_system_prompt()  # control: probe is live
+        agent.identity_prompt = "너는 윌리다."
+        agent._invalidate_system_prompt()
+        assert "Python toolchain:" not in agent._build_system_prompt()
+
 
 class TestInvalidateSystemPrompt:
     def test_clears_cache(self, agent):

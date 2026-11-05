@@ -709,7 +709,7 @@ def _post_workspace_parts(agent: Any) -> list[str]:
     (config.yaml agent.environment_probe; one line, nothing when clean, skipped
     for remote backends), bot-mode protocol, platform hint."""
     parts: list[str] = []
-    if getattr(agent, "_environment_probe", True):
+    if getattr(agent, "_environment_probe", True) and not _hosted(agent):
         try:
             from tools.env_probe import get_environment_probe_line
             parts.append(get_environment_probe_line())
